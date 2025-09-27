@@ -5,19 +5,17 @@ FROM base AS deps
 COPY package.json bun.lockb* ./
 RUN bun install --frozen-lockfile --production
 
-FROM base AS build
-COPY package.json bun.lockb* ./
-RUN bun install --frozen-lockfile
-copy . .
-RUN bun build main.ts --compile --outfile server
-
 FROM base AS production
+COPY --from=deps /app/node_modules ./node_modules
+COPY src ./src
+COPY package.json ./package.json
 
 ENV NODE_ENV=production
 ENV PORT=3002
 
-COPY --from=builder /app/server ./server
-
 EXPOSE 3002
 
-CMD ["./server"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3002/ || exit 1
+
+CMD ["bun", "run", "src/index.ts"]
