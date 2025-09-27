@@ -1,9 +1,55 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+import {
+  listContainers,
+  pauseContainer,
+  restartContainer,
+  resumeContainer,
+} from "./lib/containers";
 
-const app = new Hono()
+const app = new Hono();
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+app.use("*", cors());
+app.use("*", logger());
 
-export default app
+app.get("/", (c) => {
+  return c.text("Hello Hono!");
+});
+
+app.get("/containers", async (c) => {
+  const containers = await listContainers();
+  return c.json({
+    containers,
+  });
+});
+
+app.post("/containers/:id/restart", async (c) => {
+  const { id } = c.req.param();
+  await restartContainer(id);
+  return c.json({
+    ok: true,
+  });
+});
+
+app.post("/containers/:id/pause", async (c) => {
+  const { id } = c.req.param();
+  await pauseContainer(id);
+  return c.json({
+    ok: true,
+  });
+});
+
+app.post("/containers/:id/resume", async (c) => {
+  const { id } = c.req.param();
+  await resumeContainer(id);
+  return c.json({
+    ok: true,
+  });
+});
+
+app.get("/containers/:id", (c) => {
+  return c.text("Containers");
+});
+
+export default app;
