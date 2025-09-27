@@ -7,9 +7,11 @@ RUN bun install --frozen-lockfile --production
 
 FROM base AS build
 COPY package.json bun.lockb* ./
+COPY tsconfig.json ./
 RUN bun install --frozen-lockfile
 COPY src ./src
 COPY build.ts ./
+COPY styles ./styles
 RUN bun run build
 
 FROM base AS production
