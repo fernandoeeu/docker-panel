@@ -1,0 +1,17 @@
+services:
+  elysia-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docker-panel-server
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 3002
+    restart: unless-stopped
+    networks:
+      - newsletter-network
+
+networks:
+  newsletter-network:
+    driver: bridge
