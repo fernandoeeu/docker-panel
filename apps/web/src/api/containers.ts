@@ -1,5 +1,12 @@
 import z from "zod";
-import { api } from ".";
+
+const logEntrySchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  timestamp: z.string(),
+});
+
+export type LogEntry = z.infer<typeof logEntrySchema>;
 
 const containerSchema = z.object({
   id: z.string(),
@@ -12,16 +19,14 @@ const containerSchema = z.object({
 
 export type Container = z.infer<typeof containerSchema>;
 
-// const vpsUrl = "http://72.60.154.192:3002";
+const vpsUrl = "http://72.60.154.192:3002";
 const localUrl = "http://localhost:3002";
 
 const baseUse = localUrl;
 
 export async function getContainers() {
-  console.log("getContainers");
   const response = await fetch(`${baseUse}/containers`);
   const data = await response.json();
-  console.log({ data });
   return containerSchema.array().parse(data.containers);
 }
 
@@ -54,5 +59,6 @@ export async function readLogs(id: string) {
     method: "GET",
   });
   const data = await response.json();
-  return data.logs;
+  // console.log({ data });
+  return logEntrySchema.parse(data.log);
 }

@@ -1,27 +1,27 @@
 import { getContainerLogs } from "./containers";
+import { format } from "date-fns";
 
 type CacheEntry = {
-  key: string;
-  data: string | null;
+  id: string;
+  text: string | null;
   timestamp: number;
 };
 
 const cache: CacheEntry[] = [];
 
 export async function readFile(id: string) {
-  console.log("readFile", { id });
-  const cacheEntry = cache.find((entry) => entry.key === id);
+  const cacheEntry = cache.find((entry) => entry.id === id);
 
   if (cacheEntry && cacheEntry.timestamp > Date.now() - 1000) {
     console.log("cache hit", { id, cacheEntry });
-    return cacheEntry.data;
+    return cacheEntry.text;
   }
   const data = await getContainerLogs(id);
-  const existingIndex = cache.findIndex((entry) => entry.key === id);
+  const existingIndex = cache.findIndex((entry) => entry.id === id);
   const newEntry: CacheEntry = {
-    key: id,
+    id,
     timestamp: Date.now(),
-    data: sanitizeLogText(data),
+    text: sanitizeLogText(data),
   };
 
   if (existingIndex >= 0) {
@@ -30,7 +30,12 @@ export async function readFile(id: string) {
     cache.push(newEntry);
   }
 
-  return newEntry.data;
+  const formattedEntry = {
+    ...newEntry,
+    timestamp: format(new Date(newEntry.timestamp), "yyyy-MM-dd HH:mm:ss"),
+  };
+
+  return formattedEntry;
 }
 
 function sanitizeLogText(raw: string) {

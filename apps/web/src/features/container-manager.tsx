@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
-import { getContainers, readLogs } from "@/api/containers";
+import { getContainers, readLogs, type LogEntry } from "@/api/containers";
 import { ContainerCard } from "./container-manager/components/container-card";
 import { ContainersHeader } from "./container-manager/components/containers-header";
+import { format } from "date-fns";
+import { useEffect } from "react";
 
 export function ContainerManager() {
   const [containerId, setContainerId] = useQueryState("");
@@ -24,7 +26,7 @@ export function ContainerManager() {
     refetchInterval: 5000,
   });
 
-  console.log({ text: logsData?.logs });
+  console.log({ text: logsData });
 
   if (isLoading || !containersData) {
     return <div>Loading...</div>;
@@ -32,13 +34,14 @@ export function ContainerManager() {
 
   return (
     <div className="space-y-6">
-      <ContainersHeader />
+      <ContainersHeader length={containersData.length} />
       <div className="flex gap-4">
         <ContainerCard containers={containersData} onSelect={setContainerId} />
         <ContainerLogs
           log={{
             id: containerId,
-            text: logsData,
+            text: logsData?.text,
+            timestamp: logsData?.timestamp,
           }}
         />
       </div>
@@ -47,24 +50,33 @@ export function ContainerManager() {
 }
 
 type ContainerLogsProps = {
-  log: {
-    id: string;
-    text: string;
-  };
+  log?: LogEntry;
 };
 
 function ContainerLogs({ log }: ContainerLogsProps) {
-  if (!log.id) {
+  if (!log) {
     return <div>Select a container</div>;
   }
-  console.log({ log: log.text });
+  console.log({ log });
+
+  useEffect(() => {
+    const anchor = document.querySelector(".anchor");
+    if (anchor) {
+      anchor.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [log]);
+
+  // const formattedTimestamp = format(log.timestamp, "yyyy-MM-dd HH:mm:ss");
   return (
     <div className="flex flex-col gap-4 max-w-200">
-      <div className="text-sm text-gray-500">Logs for {log.id}</div>
+      <div className="text-sm text-gray-500">
+        Logs for {log.id} {log.timestamp}
+      </div>
 
-      <pre className="text-sm text-gray-500 whitespace-pre-wrap h-96 max-h-96 whitespace-wrap overflow-y-auto overflow-x-hidden">
+      <pre className="text-sm text-gray-500 whitespace-pre-wrap  max-h-96 whitespace-wrap overflow-y-auto overflow-x-hidden">
         {log.text}
       </pre>
+      <div className="anchor" />
     </div>
   );
 }

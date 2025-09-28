@@ -10,6 +10,7 @@ import {
   getContainerLogs,
 } from "./lib/containers";
 import { readFile } from "./lib/read-file";
+import z from "zod";
 
 const app = new Hono();
 
@@ -55,12 +56,20 @@ app.get("/containers/:id", (c) => {
   return c.text("Containers");
 });
 
+const logEntrySchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  timestamp: z.string(),
+});
+
 app.get("/containers/:id/logs", async (c) => {
   const { id } = c.req.param();
   try {
-    const logs = await readFile(id);
+    const logEntry = await readFile(id);
 
-    return c.json({ logs });
+    // console.log({ logEntry });
+
+    return c.json({ log: logEntrySchema.parse(logEntry) });
   } catch (error) {
     console.error(`Error fetching logs for container ${id}:`, error);
     return c.json(

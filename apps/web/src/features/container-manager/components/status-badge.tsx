@@ -7,7 +7,6 @@ export function StatusBadge({
   status: string;
   label: string;
 }) {
-  console.log({ status, label });
   function getStyles() {
     return (
       {

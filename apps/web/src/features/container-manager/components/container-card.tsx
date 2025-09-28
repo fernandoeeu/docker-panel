@@ -1,11 +1,4 @@
 import type { Container } from "@/api/containers";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ContainerItem } from "./containers-item";
 
 type Props = {
@@ -15,22 +8,14 @@ type Props = {
 
 export function ContainerCard({ containers, onSelect }: Props) {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Container List</CardTitle>
-        <CardDescription>{containers.length} containers found</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {containers.map((container) => (
-            <ContainerItem
-              key={container.id}
-              container={container}
-              onSelect={onSelect}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-4 w-full">
+      {containers.map((container) => (
+        <ContainerItem
+          key={container.id}
+          container={container}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
   );
 }
