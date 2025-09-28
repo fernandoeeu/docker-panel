@@ -7,6 +7,7 @@ import {
   restartContainer,
   resumeContainer,
 } from "./lib/containers";
+import { readFile } from "./lib/read-file";
 
 const app = new Hono();
 
@@ -50,6 +51,15 @@ app.post("/containers/:id/resume", async (c) => {
 
 app.get("/containers/:id", (c) => {
   return c.text("Containers");
+});
+
+app.get("/logs", async (c) => {
+  const logs = await readFile(
+    "/var/lib/docker/volumes/minecraftserver-docker-x7ppwh_minecraft_data/_data/logs"
+  );
+  return c.json({
+    logs,
+  });
 });
 
 export default app;
