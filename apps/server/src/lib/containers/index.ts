@@ -1,6 +1,7 @@
 import z from "zod";
 
 import Docker = require("dockerode");
+import { containerUnifiedSchema, unifyContainer } from "./validation";
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
@@ -51,6 +52,18 @@ export async function resumeContainer(id: string) {
   await container.unpause();
 }
 
+export async function getContainer(id: string) {
+  const container = docker.getContainer(id);
+  const inspect = await container.inspect();
+  const stats = await container.stats({ stream: false });
+
+  // get ram usage of docker instance as a whole
+  return unifyContainer({
+    inspect,
+    stats,
+  });
+}
+
 export async function getContainerLogs(id: string) {
   try {
     const container = docker.getContainer(id);
@@ -62,6 +75,16 @@ export async function getContainerLogs(id: string) {
     });
     return stream.toString();
   } catch (error) {
-    throw new Error(`Failed to get logs for container ${id}: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to get logs for container ${id}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }
+
+export type ContainerUnified = z.infer<typeof containerUnifiedSchema>;
+
+// -----------------------------
+// Função unificadora
+// -----------------------------

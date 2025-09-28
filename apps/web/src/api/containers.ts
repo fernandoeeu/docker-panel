@@ -22,40 +22,59 @@ export type Container = z.infer<typeof containerSchema>;
 const vpsUrl = "http://72.60.154.192:3002";
 const localUrl = "http://localhost:3002";
 
-const baseUse = localUrl;
+const baseUse = vpsUrl;
 
-export async function getContainers() {
-  const response = await fetch(`${baseUse}/containers`);
+type baseProps = {
+  env: "local" | "vps";
+};
+
+function getBaseUrl(env: "local" | "vps") {
+  return env === "local" ? localUrl : vpsUrl;
+}
+
+export async function getContainers(props: baseProps) {
+  const response = await fetch(`${getBaseUrl(props.env)}/containers`);
   const data = await response.json();
   return containerSchema.array().parse(data.containers);
 }
 
-export async function restartContainer(id: string) {
-  const response = await fetch(`${baseUse}/containers/${id}/restart`, {
+export async function restartContainer({
+  id,
+  env,
+}: baseProps & { id: string }) {
+  const response = await fetch(`${getBaseUrl(env)}/containers/${id}/restart`, {
     method: "POST",
   });
   const data = await response.json();
   return data;
 }
 
-export async function resumeContainer(id: string) {
-  const response = await fetch(`${baseUse}/containers/${id}/resume`, {
+export async function resumeContainer({ id, env }: baseProps & { id: string }) {
+  const response = await fetch(`${getBaseUrl(env)}/containers/${id}/resume`, {
     method: "POST",
   });
   const data = await response.json();
   return data;
 }
 
-export async function pauseContainer(id: string) {
-  const response = await fetch(`${baseUse}/containers/${id}/pause`, {
+export async function pauseContainer({ id, env }: baseProps & { id: string }) {
+  const response = await fetch(`${getBaseUrl(env)}/containers/${id}/pause`, {
     method: "POST",
   });
   const data = await response.json();
   return data;
 }
 
-export async function readLogs(id: string) {
-  const response = await fetch(`${baseUse}/containers/${id}/logs`, {
+export async function getContainer({ id, env }: baseProps & { id: string }) {
+  const response = await fetch(`${getBaseUrl(env)}/containers/${id}`, {
+    method: "GET",
+  });
+  const data = await response.json();
+  return data;
+}
+
+export async function readLogs({ id, env }: baseProps & { id: string }) {
+  const response = await fetch(`${getBaseUrl(env)}/containers/${id}/logs`, {
     method: "GET",
   });
   const data = await response.json();

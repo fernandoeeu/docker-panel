@@ -8,6 +8,7 @@ import {
   restartContainer,
   resumeContainer,
   getContainerLogs,
+  getContainer,
 } from "./lib/containers";
 import { readFile } from "./lib/read-file";
 import z from "zod";
@@ -52,8 +53,10 @@ app.post("/containers/:id/resume", async (c) => {
   });
 });
 
-app.get("/containers/:id", (c) => {
-  return c.text("Containers");
+app.get("/containers/:id", async (c) => {
+  const { id } = c.req.param();
+  const container = await getContainer(id);
+  return c.json({ container });
 });
 
 const logEntrySchema = z.object({

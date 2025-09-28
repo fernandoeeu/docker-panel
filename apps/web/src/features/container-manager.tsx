@@ -1,82 +1,113 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getContainers } from "@/api/containers";
 import { useQuery } from "@tanstack/react-query";
+import { atom, useSetAtom } from "jotai";
 import { useQueryState } from "nuqs";
-import { getContainers, readLogs, type LogEntry } from "@/api/containers";
+import { useEffect, useCallback, useMemo } from "react";
 import { ContainerCard } from "./container-manager/components/container-card";
+import { ContainerDetail } from "./container-manager/components/container-detail";
 import { ContainersHeader } from "./container-manager/components/containers-header";
-import { format } from "date-fns";
-import { useEffect } from "react";
+
+export type FilterState = {
+  containerId: string;
+  env: "local" | "vps";
+  status: "all" | "running" | "stopped" | "exited";
+};
+
+export const filtersAtom = atom<FilterState>({
+  containerId: "",
+  env: "local",
+  status: "all",
+});
 
 export function ContainerManager() {
-  const [containerId, setContainerId] = useQueryState("");
+  const [containerId, setContainerId] = useQueryState("containerId", {
+    defaultValue: "",
+    shallow: false,
+  });
+  const [env, setEnv] = useQueryState("env", {
+    defaultValue: "local",
+    shallow: false,
+  });
+  const [status, setStatus] = useQueryState("status", {
+    defaultValue: "all",
+    shallow: false,
+  });
+
+  const setFilters = useSetAtom(filtersAtom);
+
+  useEffect(() => {
+    const parsedEnv = env as "local" | "vps";
+    const parsedStatus = status as "all" | "running" | "stopped" | "exited";
+    setFilters({ containerId, env: parsedEnv, status: parsedStatus });
+  }, [containerId, env, status, setFilters]);
+
+  const parsedEnv = useMemo(() => env as "local" | "vps", [env]);
+
+  const clearFilters = useCallback(() => {
+    setContainerId("");
+    setEnv("local");
+    setStatus("all");
+  }, [setContainerId, setEnv, setStatus]);
 
   const { data: containersData, isLoading } = useQuery({
-    queryKey: ["containers"],
-    queryFn: () => getContainers(),
-    staleTime: 10,
-    // 5 seconds
+    queryKey: ["containers", parsedEnv],
+    queryFn: () => getContainers({ env: parsedEnv }),
+    staleTime: 5000, // 5 seconds
     refetchInterval: 5000,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: logsData, isLoading: isLogsLoading } = useQuery({
-    queryKey: ["logs", containerId],
-    queryFn: () => readLogs(containerId),
-    staleTime: 10,
-    enabled: !!containerId,
-    // 5 seconds
-    refetchInterval: 5000,
-  });
-
-  console.log({ text: logsData });
+  console.log({ isLoading });
 
   if (isLoading || !containersData) {
     return <div>Loading...</div>;
   }
 
+  const filteredContainers = containersData.filter((container) => {
+    if (status === "all") return true;
+    return container.state === status;
+  });
+
   return (
     <div className="space-y-6">
-      <ContainersHeader length={containersData.length} />
+      <div className="flex gap-2 items-center">
+        <ContainersHeader length={containersData.length} />
+        <Select value={env} onValueChange={setEnv}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Environment" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="local">Local</SelectItem>
+            <SelectItem value="vps">VPS</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="running">Running</SelectItem>
+            <SelectItem value="stopped">Stopped</SelectItem>
+            <SelectItem value="exited">Exited</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex gap-4">
-        <ContainerCard containers={containersData} onSelect={setContainerId} />
-        <ContainerLogs
-          log={{
-            id: containerId,
-            text: logsData?.text,
-            timestamp: logsData?.timestamp,
-          }}
+        <ContainerCard
+          containers={filteredContainers}
+          onSelect={setContainerId}
+          clearFilters={clearFilters}
         />
+        <ContainerDetail />
       </div>
-    </div>
-  );
-}
-
-type ContainerLogsProps = {
-  log?: LogEntry;
-};
-
-function ContainerLogs({ log }: ContainerLogsProps) {
-  if (!log) {
-    return <div>Select a container</div>;
-  }
-  console.log({ log });
-
-  useEffect(() => {
-    const anchor = document.querySelector(".anchor");
-    if (anchor) {
-      anchor.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [log]);
-
-  // const formattedTimestamp = format(log.timestamp, "yyyy-MM-dd HH:mm:ss");
-  return (
-    <div className="flex flex-col gap-4 max-w-200">
-      <div className="text-sm text-gray-500">
-        Logs for {log.id} {log.timestamp}
-      </div>
-
-      <pre className="text-sm text-gray-500 whitespace-pre-wrap  max-h-96 whitespace-wrap overflow-y-auto overflow-x-hidden">
-        {log.text}
-      </pre>
-      <div className="anchor" />
     </div>
   );
 }

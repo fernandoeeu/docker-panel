@@ -2,13 +2,16 @@ import type { Container } from "@/api/containers";
 import { StatusDot } from "./status-dot";
 import { StatusBadge } from "./status-badge";
 import { Button } from "@/components/ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  getContainer,
   pauseContainer,
   restartContainer,
   resumeContainer,
 } from "@/api/containers";
 import { Eye, Pause, Play, RotateCcw } from "lucide-react";
+import { useAtomValue } from "jotai";
+import { filtersAtom } from "@/features/container-manager";
 
 type Props = {
   container: Container;
@@ -17,6 +20,8 @@ type Props = {
 
 export function ContainerItem({ container, onSelect }: Props) {
   const { names, image, state, status } = container;
+
+  const { env } = useAtomValue(filtersAtom);
 
   const queryClient = useQueryClient();
 
@@ -30,19 +35,22 @@ export function ContainerItem({ container, onSelect }: Props) {
 
   const { mutate: restartContainerMutation, isPending: isRestartPending } =
     useMutation({
-      mutationFn: (containerId: string) => restartContainer(containerId),
+      mutationFn: (containerId: string) =>
+        restartContainer({ id: containerId, env }),
       onSuccess,
     });
 
   const { mutate: pauseContainerMutation, isPending: isPausePending } =
     useMutation({
-      mutationFn: (containerId: string) => pauseContainer(containerId),
+      mutationFn: (containerId: string) =>
+        pauseContainer({ id: containerId, env }),
       onSuccess,
     });
 
   const { mutate: resumeContainerMutation, isPending: isResumePending } =
     useMutation({
-      mutationFn: (containerId: string) => resumeContainer(containerId),
+      mutationFn: (containerId: string) =>
+        resumeContainer({ id: containerId, env }),
       onSuccess,
     });
 
@@ -68,7 +76,7 @@ export function ContainerItem({ container, onSelect }: Props) {
   return (
     <div
       key={container.id}
-      className="flex items-center justify-between p-4 border border-border rounded-lg max-w-300"
+      className="flex items-center justify-between p-4 border border-border rounded-lg w-full"
     >
       <div className="flex items-center gap-4">
         <StatusDot status={state} />
