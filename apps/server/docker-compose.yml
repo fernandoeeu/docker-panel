@@ -8,6 +8,9 @@ services:
       - NODE_ENV=production
     ports:
       - "3002:3002"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
     restart: unless-stopped
     networks:
       - newsletter-network
