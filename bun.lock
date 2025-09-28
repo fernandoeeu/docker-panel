@@ -10,6 +10,7 @@
     "apps/server": {
       "name": "server",
       "dependencies": {
+        "date-fns": "^4.1.0",
         "dayjs": "^1.11.18",
         "dockerode": "^4.0.8",
         "hono": "^4.9.9",

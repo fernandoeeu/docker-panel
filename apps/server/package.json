@@ -4,6 +4,7 @@
     "dev": "bun run --port=3002 --hot src/index.ts "
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.18",
     "dockerode": "^4.0.8",
     "hono": "^4.9.9",
