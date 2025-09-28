@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { HTTPException } from "hono/http-exception";
 import {
   listContainers,
   pauseContainer,
@@ -60,6 +61,19 @@ app.get("/logs", async (c) => {
   return c.json({
     logs,
   });
+});
+
+app.onError((err, c) => {
+  console.error(err);
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  return c.json(
+    {
+      error: "Internal server error",
+    },
+    500
+  );
 });
 
 export default app;

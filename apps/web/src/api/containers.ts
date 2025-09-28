@@ -12,12 +12,12 @@ const containerSchema = z.object({
 
 export type Container = z.infer<typeof containerSchema>;
 
-const baseUrl = "http://72.60.154.192:3002";
-// const baseUrl = "http://localhost:3002";
+const vpsUrl = "http://72.60.154.192:3002";
+const localUrl = "http://localhost:3002";
 
 export async function getContainers() {
   console.log("getContainers");
-  const response = await fetch(`${baseUrl}/containers`);
+  const response = await fetch(`${localUrl}/containers`);
   const data = await response.json();
   console.log({ data });
   return containerSchema.array().parse(data.containers);
