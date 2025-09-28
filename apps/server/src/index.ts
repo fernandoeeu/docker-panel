@@ -55,6 +55,7 @@ app.get("/containers/:id", (c) => {
 });
 
 app.get("/logs", async (c) => {
+  console.log({ currentDir: __dirname, processCwd: process.cwd() });
   const logs = await readFile(
     "/var/lib/docker/volumes/minecraftserver-docker-x7ppwh_minecraft_data/_data/logs"
   );

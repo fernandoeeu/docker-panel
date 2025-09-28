@@ -13,41 +13,45 @@ const containerSchema = z.object({
 export type Container = z.infer<typeof containerSchema>;
 
 const vpsUrl = "http://72.60.154.192:3002";
-const localUrl = "http://localhost:3002";
+// const localUrl = "http://localhost:3002";
+
+const baseUse = vpsUrl;
 
 export async function getContainers() {
   console.log("getContainers");
-  const response = await fetch(`${localUrl}/containers`);
+  const response = await fetch(`${baseUse}/containers`);
   const data = await response.json();
   console.log({ data });
   return containerSchema.array().parse(data.containers);
 }
 
 export async function restartContainer(id: string) {
-  const response = await fetch(
-    `http://localhost:3002/containers/${id}/restart`,
-    {
-      method: "POST",
-    }
-  );
+  const response = await fetch(`${baseUse}/containers/${id}/restart`, {
+    method: "POST",
+  });
   const data = await response.json();
   return data;
 }
 
 export async function resumeContainer(id: string) {
-  const response = await fetch(
-    `http://localhost:3002/containers/${id}/resume`,
-    {
-      method: "POST",
-    }
-  );
+  const response = await fetch(`${baseUse}/containers/${id}/resume`, {
+    method: "POST",
+  });
   const data = await response.json();
   return data;
 }
 
 export async function pauseContainer(id: string) {
-  const response = await fetch(`http://localhost:3002/containers/${id}/pause`, {
+  const response = await fetch(`${baseUse}/containers/${id}/pause`, {
     method: "POST",
+  });
+  const data = await response.json();
+  return data;
+}
+
+export async function readLogs() {
+  const response = await fetch(`${baseUse}/logs`, {
+    method: "GET",
   });
   const data = await response.json();
   return data;
