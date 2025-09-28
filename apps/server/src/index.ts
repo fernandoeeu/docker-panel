@@ -7,6 +7,7 @@ import {
   pauseContainer,
   restartContainer,
   resumeContainer,
+  getContainerLogs,
 } from "./lib/containers";
 import { readFile } from "./lib/read-file";
 
@@ -54,14 +55,22 @@ app.get("/containers/:id", (c) => {
   return c.text("Containers");
 });
 
-app.get("/logs", async (c) => {
-  console.log({ currentDir: __dirname, processCwd: process.cwd() });
-  const logs = await readFile(
-    "/var/lib/docker/volumes/minecraftserver-docker-x7ppwh_minecraft_data/_data/logs"
-  );
-  return c.json({
-    logs,
-  });
+app.get("/containers/:id/logs", async (c) => {
+  const { id } = c.req.param();
+  try {
+    const logs = await readFile(id);
+
+    return c.json({ logs });
+  } catch (error) {
+    console.error(`Error fetching logs for container ${id}:`, error);
+    return c.json(
+      {
+        error: `Failed to fetch logs for container ${id}`,
+        message: error instanceof Error ? error.message : String(error),
+      },
+      404
+    );
+  }
 });
 
 app.onError((err, c) => {

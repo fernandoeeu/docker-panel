@@ -10,11 +10,12 @@ import { ContainerItem } from "./containers-item";
 
 type Props = {
   containers: Container[];
+  onSelect: (id: string) => void;
 };
 
-export function ContainerCard({ containers }: Props) {
+export function ContainerCard({ containers, onSelect }: Props) {
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Container List</CardTitle>
         <CardDescription>{containers.length} containers found</CardDescription>
@@ -22,7 +23,11 @@ export function ContainerCard({ containers }: Props) {
       <CardContent>
         <div className="space-y-4">
           {containers.map((container) => (
-            <ContainerItem key={container.id} container={container} />
+            <ContainerItem
+              key={container.id}
+              container={container}
+              onSelect={onSelect}
+            />
           ))}
         </div>
       </CardContent>

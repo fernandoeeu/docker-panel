@@ -8,13 +8,14 @@ import {
   restartContainer,
   resumeContainer,
 } from "@/api/containers";
-import { Pause, Play, RotateCcw } from "lucide-react";
+import { Eye, Pause, Play, RotateCcw } from "lucide-react";
 
 type Props = {
   container: Container;
+  onSelect: (id: string) => void;
 };
 
-export function ContainerItem({ container }: Props) {
+export function ContainerItem({ container, onSelect }: Props) {
   const { names, image, state, status } = container;
 
   const queryClient = useQueryClient();
@@ -67,7 +68,7 @@ export function ContainerItem({ container }: Props) {
   return (
     <div
       key={container.id}
-      className="flex items-center justify-between p-4 border border-border rounded-lg"
+      className="flex items-center justify-between p-4 border border-border rounded-lg max-w-300"
     >
       <div className="flex items-center gap-4">
         <StatusDot status={state} />
@@ -110,6 +111,13 @@ export function ContainerItem({ container }: Props) {
           onClick={() => handlePauseContainer(container.id)}
         >
           <Pause className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onSelect(container.id)}
+        >
+          <Eye className="h-4 w-4" />
         </Button>
       </div>
     </div>

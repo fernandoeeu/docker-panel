@@ -19,7 +19,7 @@ const containerSchema = z.object({
 
 export async function listContainers() {
   const containers = await docker.listContainers({ all: true });
-  const parsedContainers = containers.map((container, index) => {
+  const parsedContainers = containers.map((container) => {
     return {
       id: container.Id,
       names: container.Names.map(normalizeDockerName),
@@ -49,4 +49,19 @@ export async function resumeContainer(id: string) {
   console.log("unpauseContainer", id);
   const container = docker.getContainer(id);
   await container.unpause();
+}
+
+export async function getContainerLogs(id: string) {
+  try {
+    const container = docker.getContainer(id);
+    const stream = await container.logs({
+      stdout: true,
+      stderr: true,
+      tail: 100,
+      timestamps: true,
+    });
+    return stream.toString();
+  } catch (error) {
+    throw new Error(`Failed to get logs for container ${id}: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
