@@ -4,6 +4,7 @@ import type {
   NetworkInfo,
 } from "dockerode";
 import { z } from "zod";
+import { calculateCPUPercent, memoryUsageString } from "./utils";
 
 export const containerUnifiedSchema = z.object({
   id: z.string(),
@@ -111,12 +112,12 @@ export const containerSchema = z.object({
   startedAt: z.string(),
 
   cpu: z.object({
-    usageInNanoseconds: z.number(),
+    usageInNanoseconds: z.string(),
     onlineCPUs: z.number(),
   }),
 
   memory: z.object({
-    usageInBytes: z.number(),
+    usageInBytes: z.string(),
     limitInBytes: z.number(),
   }),
 
@@ -150,12 +151,18 @@ export function unifyContainer(data: { inspect: any; stats: any }) {
     startedAt: inspect.State.StartedAt,
 
     cpu: {
-      usageInNanoseconds: stats.cpu_stats.cpu_usage.total_usage,
+      usageInNanoseconds: calculateCPUPercent(
+        stats.cpu_stats,
+        stats.precpu_stats
+      ),
       onlineCPUs: stats.cpu_stats.online_cpus,
     },
 
     memory: {
-      usageInBytes: stats.memory_stats.usage,
+      usageInBytes: memoryUsageString(
+        stats.memory_stats.usage,
+        stats.memory_stats.limit
+      ),
       limitInBytes: stats.memory_stats.limit,
     },
 

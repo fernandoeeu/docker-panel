@@ -1,4 +1,5 @@
 import z from "zod";
+import { containerDetailSchema } from "./types";
 
 const logEntrySchema = z.object({
   id: z.string(),
@@ -21,8 +22,6 @@ export type Container = z.infer<typeof containerSchema>;
 
 const vpsUrl = "http://72.60.154.192:3002";
 const localUrl = "http://localhost:3002";
-
-const baseUse = vpsUrl;
 
 type baseProps = {
   env: "local" | "vps";
@@ -70,7 +69,7 @@ export async function getContainer({ id, env }: baseProps & { id: string }) {
     method: "GET",
   });
   const data = await response.json();
-  return data;
+  return containerDetailSchema.parse(data.container);
 }
 
 export async function readLogs({ id, env }: baseProps & { id: string }) {
@@ -78,6 +77,13 @@ export async function readLogs({ id, env }: baseProps & { id: string }) {
     method: "GET",
   });
   const data = await response.json();
-  // console.log({ data });
-  return logEntrySchema.parse(data.log);
+
+  // O servidor retorna { log: { text, timestamp } }, mas precisamos de { id, text, timestamp }
+  const logData = {
+    id: id,
+    text: data.log.text,
+    timestamp: data.log.timestamp,
+  };
+
+  return logEntrySchema.parse(logData);
 }

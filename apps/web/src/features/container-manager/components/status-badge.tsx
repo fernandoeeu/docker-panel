@@ -1,4 +1,6 @@
 import { Badge } from "@/components/ui/badge";
+import clsx from "clsx";
+import { StatusDot } from "./status-dot";
 
 export function StatusBadge({
   status,
@@ -7,17 +9,9 @@ export function StatusBadge({
   status: string;
   label: string;
 }) {
-  function getStyles() {
-    return (
-      {
-        running: "bg-green-600 hover:bg-green-700",
-        stopped: "bg-yellow-600 hover:bg-yellow-700",
-        exited: "bg-red-600 hover:bg-red-700",
-      }[status] ?? "bg-gray-600 hover:bg-gray-700"
-    );
-  }
   return (
-    <Badge variant="secondary" className={getStyles()}>
+    <Badge variant="outline">
+      <StatusDot status={status} />
       {label}
     </Badge>
   );

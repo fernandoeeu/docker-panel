@@ -1,7 +1,6 @@
 import type { Container } from "@/api/containers";
-import { ContainerItem } from "./containers-item";
 import { Button } from "@/components/ui/button";
-import type { FilterState } from "@/features/container-manager";
+import { ContainerItem } from "./containers-item";
 
 type Props = {
   containers: Container[];

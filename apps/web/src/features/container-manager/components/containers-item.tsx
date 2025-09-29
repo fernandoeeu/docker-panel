@@ -1,17 +1,16 @@
 import type { Container } from "@/api/containers";
-import { StatusDot } from "./status-dot";
-import { StatusBadge } from "./status-badge";
-import { Button } from "@/components/ui/button";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  getContainer,
   pauseContainer,
   restartContainer,
   resumeContainer,
 } from "@/api/containers";
-import { Eye, Pause, Play, RotateCcw } from "lucide-react";
-import { useAtomValue } from "jotai";
+import { Button } from "@/components/ui/button";
 import { filtersAtom } from "@/features/container-manager";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import { Eye, Pause, Play, RotateCcw } from "lucide-react";
+import { StatusBadge } from "./status-badge";
+import { StatusDot } from "./status-dot";
 
 type Props = {
   container: Container;
@@ -76,57 +75,48 @@ export function ContainerItem({ container, onSelect }: Props) {
   return (
     <div
       key={container.id}
-      className="flex items-center justify-between p-4 border border-border rounded-lg w-full"
+      className="flex items-center justify-between p-4 border border-border rounded-lg w-full bg-muted/50"
     >
       <div className="flex items-center gap-4">
-        <StatusDot status={state} />
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{names[0]}</span>
+          <div className="flex gap-2 flex-col">
             <StatusBadge status={state} label={status} />
+            <span className="font-medium">{names[0]}</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>{image}</span>
-            <span>{state}</span>
+            {/* <span>{image}</span> */}
+            {/* <span>{state}</span> */}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground mr-4">
-          <span>CPU: {status}</span>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            disabled={isRestartPending || !canRestart}
+            onClick={() => handleRestartContainer(container.id)}
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            disabled={isResumePending || !canResume}
+            onClick={() => handleResumeContainer(container.id)}
+          >
+            <Play className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            disabled={isPausePending || !canPause}
+            onClick={() => handlePauseContainer(container.id)}
+          >
+            <Pause className="h-4 w-4" />
+          </Button>
+          <Button size="sm" onClick={() => onSelect(container.id)}>
+            <Eye className="h-4 w-4" />
+          </Button>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isRestartPending || !canRestart}
-          onClick={() => handleRestartContainer(container.id)}
-        >
-          <RotateCcw className="h-4 w-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isResumePending || !canResume}
-          onClick={() => handleResumeContainer(container.id)}
-        >
-          <Play className="h-4 w-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isPausePending || !canPause}
-          onClick={() => handlePauseContainer(container.id)}
-        >
-          <Pause className="h-4 w-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onSelect(container.id)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
